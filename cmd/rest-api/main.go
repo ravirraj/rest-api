@@ -13,16 +13,21 @@ import (
 
 	"github.com/ravirraj/rest-api/internal/config"
 	"github.com/ravirraj/rest-api/internal/http/handlers/student"
+	"github.com/ravirraj/rest-api/internal/storage/sqlite"
 )
 
 func main() {
 	//load config
 	cfg := config.MustLoad()
 	//databse setup
+	storage, err := sqlite.New(cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
 	//setup router
 	router := http.NewServeMux()
 
-	router.HandleFunc("POST /api/students", student.New())
+	router.HandleFunc("POST /api/students", student.New(storage))
 	//setup server
 
 	server := http.Server{
@@ -47,7 +52,7 @@ func main() {
 
 	ctx, cancle := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancle()
-	err := server.Shutdown(ctx)
+	err = server.Shutdown(ctx)
 	if err != nil {
 		slog.Error("Failed to shutdown server", slog.String("err", err.Error()))
 	}
