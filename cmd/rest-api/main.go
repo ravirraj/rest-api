@@ -1,7 +1,57 @@
 package main
 
-import "fmt"
+import (
+	"context"
+	"fmt"
+	"log"
+	"log/slog"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
-func main( ) {
-	fmt.Println("welcome to rest-api")
+	"github.com/ravirraj/rest-api/internal/config"
+)
+
+func main() {
+	//load config
+	cfg := config.MustLoad()
+	//databse setup
+	//setup router
+	router := http.NewServeMux()
+
+	router.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("welcome to student api"))
+	})
+	//setup server
+
+	server := http.Server{
+		Addr:    cfg.Adr,
+		Handler: router,
+	}
+
+	fmt.Println("server starting on", cfg.Adr)
+
+	done := make(chan os.Signal, 1)
+	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		err := server.ListenAndServe()
+		if err != nil {
+			log.Fatal("faild to start server", err)
+		}
+	}()
+
+	<-done
+
+	slog.Info("shutting down the server ")
+
+	ctx, cancle := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancle()
+	err := server.Shutdown(ctx)
+	if err != nil {
+		slog.Error("Failed to shutdown server", slog.String("err", err.Error()))
+	}
+	slog.Info("server shutdown successfully")
+
 }
