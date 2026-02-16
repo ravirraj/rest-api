@@ -41,7 +41,7 @@ func ValidationError(errs validator.ValidationErrors) Response {
 		case "required":
 			errMesg = append(errMesg, fmt.Sprintf("field %s is required field", err.Field()))
 		default:
-			errMesg = append(errMesg, fmt.Sprintf("field %s is invalid , err.Field"))
+			errMesg = append(errMesg, fmt.Sprintf("field %s is invalid" , err.Field()))
 		}
 
 	}
