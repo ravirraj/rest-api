@@ -3,6 +3,7 @@ package sqlite
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/ravirraj/rest-api/internal/config"
@@ -127,4 +128,35 @@ func(s *Sqlite) DeleteStudentById(id int64)(int64,error) {
 	}
 
 	return result.RowsAffected()
+}
+
+func (s *Sqlite ) UpdateStudentInfo(id int64 , input types.UpdateStudent) error {
+	query := "UPDATE students SET "
+	args := []interface{}{}
+	field := []string{}
+
+	if input.Name != nil {
+		field = append(field, "name = ?")
+		args = append(args, *input.Name)
+	}
+	if input.Email != nil {
+		field = append(field, "email = ?")
+		args = append(args, *input.Email)
+	}
+	if input.Age != nil {
+		field = append(field, "age = ?")
+		args = append(args, *input.Age)
+	}
+	if len(field) == 0 {
+		return  fmt.Errorf("NO FIELD TO UPDATE \n")
+	}
+
+	query+= strings.Join(field, ", ")
+	query+= "WHERE id = ?"
+
+	args = append(args, id)
+
+	_,err := s.Db.Exec(query,args...)
+	fmt.Println(err)
+	return  err
 }

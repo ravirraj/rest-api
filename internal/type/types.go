@@ -6,3 +6,10 @@ type Student struct {
 	Email string `validate:"required"`
 	Age   int    `validate:"required"`
 }
+
+
+type UpdateStudent struct {
+	Name *string 
+	Email *string
+	Age *int
+}

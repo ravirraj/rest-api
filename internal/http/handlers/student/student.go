@@ -97,7 +97,6 @@ func DeleteStudentById(storage storage.Storage) http.HandlerFunc {
 		id := r.PathValue("id")
 		slog.Info("deleting user %v", slog.String("id", id))
 
-
 		parsedInt, err := strconv.ParseInt(id, 10, 64)
 		if err != nil {
 			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(err))
@@ -111,6 +110,39 @@ func DeleteStudentById(storage storage.Storage) http.HandlerFunc {
 			return
 		}
 
-		response.WriteJson(w,http.StatusOK,delRow)
+		response.WriteJson(w, http.StatusOK, delRow)
+	}
+}
+
+func UpdateStudentInfo(storage storage.Storage) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		var UpdateStudent types.UpdateStudent
+		err := json.NewDecoder(r.Body).Decode(&UpdateStudent)
+		if err != nil {
+			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(err))
+			fmt.Println(err)
+
+		}
+
+		id := r.PathValue("id")
+		slog.Info("UPDATEING THE USER", slog.String("id ", id))
+
+		parint, err := strconv.ParseInt(id, 10, 64)
+
+		if err != nil {
+			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(err))
+			fmt.Println(err)
+		}
+
+		err = storage.UpdateStudentInfo(parint, UpdateStudent)
+
+		if err != nil {
+			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(err))
+			fmt.Println(err)
+
+		}
+		slog.Info("USER UPDATED")
+
 	}
 }
